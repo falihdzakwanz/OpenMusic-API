@@ -1,5 +1,5 @@
-import { AlbumPayloadSchema } from './schema';
-import InvariantError from '../../exceptions/InvariantError';
+import { AlbumPayloadSchema } from './schema.js';
+import InvariantError from '../../exceptions/InvariantError.js';
 
 const AlbumsValidator = {
     validateAlbumPayload: (payload) => {

@@ -1,5 +1,5 @@
-import SongsHandler from "./handler";
-import songRoutes from "./routes";
+import SongsHandler from "./handler.js";
+import songRoutes from "./routes.js";
 
 export default {
     name: 'songs',

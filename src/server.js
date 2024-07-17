@@ -1,12 +1,12 @@
 import Hapi from '@hapi/hapi';
 import dotenv from 'dotenv';
-import albums from './api/albums';
-import songs from './api/songs';
-import AlbumsService from './services/postgres/AlbumsService';
-import SongsService from './services/postgres/SongsService';
-import AlbumsValidator from './validator/albums';
-import SongsValidator from './validator/songs';
-import ClientError from './exceptions/ClientError';
+import albums from './api/albums/index.js';
+import songs from './api/songs/index.js';
+import AlbumsService from './services/postgres/AlbumsService.js';
+import SongsService from './services/postgres/SongsService.js';
+import AlbumsValidator from './validator/albums/index.js';
+import SongsValidator from './validator/songs/index.js';
+import ClientError from './exceptions/ClientError.js';
 
 dotenv.config();
 

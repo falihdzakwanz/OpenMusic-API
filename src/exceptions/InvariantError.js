@@ -1,4 +1,4 @@
-import ClientError from "./ClientError";
+import ClientError from "./ClientError.js";
 
 class InvariantError extends ClientError {
     constructor(message) {

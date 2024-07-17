@@ -1,5 +1,5 @@
-import AlbumsHandler from "./handler";
-import albumRoutes from "./routes";
+import AlbumsHandler from "./handler.js";
+import albumRoutes from "./routes.js";
 
 export default {
     name: 'albums',
@@ -9,3 +9,4 @@ export default {
         server.route(albumRoutes(albumsHandler));
     },
 };
+
