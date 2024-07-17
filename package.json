@@ -10,8 +10,10 @@
   },
   "author": "Falih Dzakwan Zuhdi",
   "license": "ISC",
+  "type": "module",
   "dependencies": {
     "@hapi/hapi": "^21.3.10",
+    "auto-bind": "^4.0.0",
     "dotenv": "^16.4.5",
     "joi": "^17.13.3",
     "nanoid": "^5.0.7",
