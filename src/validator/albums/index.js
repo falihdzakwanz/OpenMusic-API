@@ -1,13 +1,13 @@
 import { AlbumPayloadSchema } from './schema';
-const InvariantError = require('../../exceptions/InvariantError');
+import InvariantError from '../../exceptions/InvariantError';
 
-const NotesValidator = {
-    validateNotePayload: (payload) => {
-        const validationResult = NotePayloadSchema.validate(payload);
+const AlbumsValidator = {
+    validateAlbumPayload: (payload) => {
+        const validationResult = AlbumPayloadSchema.validate(payload);
         if (validationResult.error) {
             throw new InvariantError(validationResult.error.message);
         }
     },
 };
 
-module.exports = NotesValidator;
+export default AlbumsValidator;
