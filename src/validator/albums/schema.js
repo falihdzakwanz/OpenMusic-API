@@ -1,8 +1,8 @@
 import Joi from 'joi';
 
 const AlbumPayloadSchema = Joi.object({
-    name: Joi.string().required(),
-    year: Joi.number().required(),
+  name: Joi.string().required(),
+  year: Joi.number().required(),
 });
 
-export { AlbumPayloadSchema };
+export default AlbumPayloadSchema;

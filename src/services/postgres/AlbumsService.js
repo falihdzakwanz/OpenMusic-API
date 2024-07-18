@@ -1,81 +1,82 @@
 import { nanoid } from 'nanoid';
+import pg from 'pg';
 import InvariantError from '../../exceptions/InvariantError.js';
 import NotFoundError from '../../exceptions/NotFoundError.js';
-import pg from 'pg';
+
 const { Pool } = pg;
 
 class AlbumsService {
-    constructor() {
-        this._pool = new Pool();
+  constructor() {
+    this._pool = new Pool();
+  }
+
+  async addAlbum({ name, year }) {
+    const id = `album-${nanoid(16)}`;
+
+    const query = {
+      text: 'INSERT INTO albums VALUES($1, $2, $3) RETURNING id',
+      values: [id, name, year],
+    };
+
+    const result = await this._pool.query(query);
+
+    if (!result.rows[0].id) {
+      throw new InvariantError('Failed to add album');
     }
 
-    async addAlbum({ name, year }) {
-        const id = `album-${nanoid(16)}`;
+    return result.rows[0].id;
+  }
 
-        const query = {
-            text: 'INSERT INTO albums VALUES($1, $2, $3) RETURNING id',
-            values: [id, name, year],
-        };
+  async getAlbumById(id) {
+    const albumQuery = {
+      text: 'SELECT * FROM albums WHERE id = $1',
+      values: [id],
+    };
+    const albumResult = await this._pool.query(albumQuery);
 
-        const result = await this._pool.query(query);
-
-        if (!result.rows[0].id) {
-            throw new InvariantError('Failed to add album');
-        }
-
-        return result.rows[0].id;
+    if (!albumResult.rows.length) {
+      throw new NotFoundError('Album not found');
     }
 
-    async getAlbumById(id) {
-        const albumQuery = {
-            text: 'SELECT * FROM albums WHERE id = $1',
-            values: [id],
-        };
-        const albumResult = await this._pool.query(albumQuery);
+    const album = albumResult.rows[0];
 
-        if (!albumResult.rows.length) {
-            throw new NotFoundError('Album not found');
-        }
+    const querySong = {
+      text: 'SELECT songs.id, songs.title, songs.performer FROM songs INNER JOIN albums ON albums.id=songs."albumId" WHERE albums.id=$1',
+      values: [id],
+    };
 
-        const album = albumResult.rows[0];
+    const songsResult = await this._pool.query(querySong);
 
-        const querySong = {
-            text: 'SELECT songs.id, songs.title, songs.performer FROM songs INNER JOIN albums ON albums.id=songs."albumId" WHERE albums.id=$1',
-            values: [id]
-        };
+    album.songs = songsResult.rows;
 
-        const songsResult = await this._pool.query(querySong);
+    return album;
+  }
 
-        album.songs = songsResult.rows;
+  async editAlbumById(id, { name, year }) {
+    const query = {
+      text: 'UPDATE albums SET name = $1, year = $2 WHERE id = $3 RETURNING id',
+      values: [name, year, id],
+    };
 
-        return album;
+    const result = await this._pool.query(query);
+
+    if (!result.rows.length) {
+      throw new NotFoundError('Failed to update album. Id not found');
     }
+  }
 
-    async editAlbumById(id, { name, year }) {
-        const query = {
-            text: 'UPDATE albums SET name = $1, year = $2 WHERE id = $3 RETURNING id',
-            values: [name, year, id],
-        };
+  async deleteAlbumById(id) {
+    const query = {
+      text: 'DELETE FROM albums WHERE id = $1 RETURNING id',
+      values: [id],
+    };
 
-        const result = await this._pool.query(query);
+    const result = await this._pool.query(query);
 
-        if (!result.rows.length) {
-            throw new NotFoundError('Failed to update album. Id not found');
-        }
+    if (!result.rows.length) {
+      throw new NotFoundError('Failed to delete album. Id not found');
     }
-
-    async deleteAlbumById(id) {
-        const query = {
-            text: 'DELETE FROM albums WHERE id = $1 RETURNING id',
-            values: [id],
-        };
-
-        const result = await this._pool.query(query);
-
-        if (!result.rows.length) {
-            throw new NotFoundError('Failed to delete album. Id not found');
-        }
-    }
+  }
 }
 
 export default AlbumsService;
