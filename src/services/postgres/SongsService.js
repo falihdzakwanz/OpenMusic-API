@@ -9,7 +9,7 @@ class SongService {
         this._pool = new Pool();
     }
 
-    async addsSong({ title, year, performer, genre, duration, albumId }) {
+    async addSong({ title, year, performer, genre, duration, albumId }) {
         const id = `song-${nanoid(16)}`;
 
         const query = {
@@ -26,11 +26,29 @@ class SongService {
         return result.rows[0].id;
     }
 
-    async getSongs() {
-        const result = await this._pool.query('SELECT id, title, perfomer FROM songs');
+    async getSongs({ title, performer }) {
+        let query = 'SELECT id, title, performer FROM songs';
+        const conditions = [];
+        const values = [];
+
+        if (title) {
+            conditions.push('title ILIKE $' + (values.length + 1));
+            values.push(`%${title}%`);
+        }
+
+        if (performer) {
+            conditions.push('performer ILIKE $' + (values.length + 1));
+            values.push(`%${performer}%`);
+        }
+
+        if (conditions.length > 0) {
+            query += ' WHERE ' + conditions.join(' AND ');
+        }
+
+        const result = await this._pool.query(query, values);
         return result.rows;
     }
-
+    
     async getSongById(id) {
         const query = {
             text: 'SELECT * FROM songs WHERE id = $1',
@@ -41,19 +59,19 @@ class SongService {
         if (!result.rows.length) {
             throw new NotFoundError('Song not found');
         }
-
+        
         return result.rows[0];
     }
 
-    async editSongById(id, { title, year, performer, genre, duration, albumId }) {
+    async editSongById(id, { title, year, performer, genre, duration }) {
         const query = {
-            text: 'UPDATE songs SET title = $1, year = $2, performer = $3, genre = $4, duration = $5, album_id = $6 WHERE id = $7 RETURNING id',
-            values: [title, year, performer, genre, duration, albumId, id],
+            text: 'UPDATE songs SET title = $1, year = $2, performer = $3, genre = $4, duration = $5 WHERE id = $6 RETURNING id',
+            values: [title, year, performer, genre, duration, id],
         };
 
         const result = await this._pool.query(query);
 
-        if (!result.rows.length) {
+        if (!result.rowCount) {
             throw new NotFoundError('Failed to updated song. Id not found');
         }
     }
