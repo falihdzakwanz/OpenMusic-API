@@ -17,6 +17,7 @@ class PlaylistSongsHandler {
 
     await this._playlistsService.verifyPlaylistAccess(playlistId, credentialId);
     await this._playlistSongService.addSongToPlaylist(playlistId, songId);
+    await this._playlistSongService.addActivity(playlistId, credentialId, 'add', songId);
 
     const response = h.response({
       status: 'success',
@@ -53,7 +54,7 @@ class PlaylistSongsHandler {
 
     await this._playlistsService.verifyPlaylistAccess(playlistId, credentialId);
     await this._playlistSongService.deleteSongFromPlaylist(playlistId, songId);
-
+    await this._playlistSongService.addActivity(playlistId, credentialId, 'delete', songId);
     return {
       status: 'success',
       message: 'Song deleted from playlist successfully',

@@ -11,6 +11,20 @@ class PlaylistSongService {
     this._pool = new Pool();
   }
 
+  async addActivity(playlistId, userId, action, songId) {
+    const id = `activity-${nanoid(16)}`;
+    const query = {
+      text: 'INSERT INTO playlist_activities VALUES($1, $2, $3, $4, $5, $6) RETURNING id',
+      values: [id, playlistId, userId, action, songId, new Date()],
+    };
+
+    const result = await this._pool.query(query);
+
+    if (!result.rows[0].id) {
+      throw new InvariantError('Failed to add activity');
+    }
+  }
+
   async addSongToPlaylist(playlistId, songId) {
     await this._songService.getSongById(songId);
     const id = `playlistSong-${nanoid(16)}`;
@@ -56,7 +70,7 @@ class PlaylistSongService {
     const songsResult = await this._pool.query(songsQuery);
 
     if (!playlistResult.rowCount) {
-      throw new NotFoundError('Playlist tidak ditemukan');
+      throw new NotFoundError('Playlist not found');
     }
 
     return {

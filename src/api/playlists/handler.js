@@ -51,7 +51,7 @@ class PlaylistsHandler {
   async getPlaylistActivitiesHandler(request) {
     const { id: playlistId } = request.params;
     const { id: credentialId } = request.auth.credentials;
-    await this._playlistsService.verifyPlaylistOwner(playlistId, credentialId);
+    await this._playlistsService.verifyPlaylistAccess(playlistId, credentialId);
     const activities = await this._playlistsService.getActivitiesByPlaylistId(playlistId);
 
     return {
