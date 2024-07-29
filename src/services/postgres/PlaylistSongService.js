@@ -6,8 +6,7 @@ import NotFoundError from '../../exceptions/NotFoundError.js';
 const { Pool } = pg;
 
 class PlaylistSongService {
-  constructor(songService) {
-    this._songService = songService;
+  constructor() {
     this._pool = new Pool();
   }
 
@@ -26,7 +25,6 @@ class PlaylistSongService {
   }
 
   async addSongToPlaylist(playlistId, songId) {
-    await this._songService.getSongById(songId);
     const id = `playlistSong-${nanoid(16)}`;
     const query = {
       text: 'INSERT INTO playlist_songs VALUES($1, $2, $3) RETURNING id',
@@ -35,7 +33,7 @@ class PlaylistSongService {
 
     const result = await this._pool.query(query);
     if (!result.rows[0].id) {
-      throw new InvariantError('Failed to add song to playlist');
+      throw new NotFoundError('Failed to add song to playlist. Id not found');
     }
     return result.rows[0].id;
   }
