@@ -24,20 +24,25 @@ import AuthenticationsValidator from './validator/authentications/index.js';
 import playlists from './api/playlists/index.js';
 import PlaylistService from './services/postgres/PlaylistsService.js';
 import PlaylistValidator from './validator/playlists/index.js';
-// playlistsSongs
+// collaborations
+import collaborations from './api/collaborations/index.js';
+import CollaborationsService from './services/postgres/CollaborationsService.js';
+import CollaborationsValidator from './validator/collaborations/index.js';
+// playlistSong
 import playlistSongs from './api/playlistSongs/index.js';
-import PlaylistSongsService from './services/postgres/PlaylistSongsService.js';
+import PlaylistSongService from './services/postgres/PlaylistSongService.js';
 import PlaylistSongValidator from './validator/playlistSongs/index.js';
 
 dotenv.config();
 
 const init = async () => {
-  const albumsService = new AlbumsService();
+  const collaborationsService = new CollaborationsService();
+  const playlistsService = new PlaylistService(collaborationsService);
+  const playlistSongsService = new PlaylistSongService();
   const songsService = new SongsService();
+  const albumsService = new AlbumsService();
   const usersService = new UsersService();
   const authenticationsService = new AuthenticationsService();
-  const playlistsService = new PlaylistService();
-  const playlistSongsService = new PlaylistSongsService();
 
   const server = Hapi.server({
     port: process.env.PORT,
@@ -110,9 +115,18 @@ const init = async () => {
       },
     },
     {
+      plugin: collaborations,
+      options: {
+        collaborationsService,
+        playlistsService,
+        validator: CollaborationsValidator,
+      },
+    },
+    {
       plugin: playlistSongs,
       options: {
-        service: playlistSongsService,
+        playlistsService,
+        playlistSongsService,
         validator: PlaylistSongValidator,
       },
     },

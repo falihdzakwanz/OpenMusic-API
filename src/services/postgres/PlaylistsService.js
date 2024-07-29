@@ -2,12 +2,13 @@ import { nanoid } from 'nanoid';
 import pg from 'pg';
 import InvariantError from '../../exceptions/InvariantError.js';
 import NotFoundError from '../../exceptions/NotFoundError.js';
+import AuthorizationError from '../../exceptions/AuthorizationError.js';
 
 const { Pool } = pg;
-
 class PlaylistsService {
-  constructor() {
+  constructor(collaborationService) {
     this._pool = new Pool();
+    this._collaborationService = collaborationService;
   }
 
   async addPlaylist({ name, owner }) {
@@ -28,7 +29,7 @@ class PlaylistsService {
 
   async getPlaylists(owner) {
     const query = {
-      text: 'SELECT * FROM playlists WHERE owner = $1',
+      text: 'SELECT playlists.id, playlists.name, users.username FROM playlists INNER JOIN users ON users.id = playlists.owner WHERE playlists.owner = $1',
       values: [owner],
     };
 
@@ -49,6 +50,56 @@ class PlaylistsService {
     }
 
     return result.rows[0].id;
+  }
+
+  async verifyPlaylistOwner(id, owner) {
+    const query = {
+      text: 'SELECT * FROM playlists WHERE id = $1',
+      values: [id],
+    };
+    const result = await this._pool.query(query);
+    if (!result.rows.length) {
+      throw new NotFoundError('Playlist not found');
+    }
+    const playlist = result.rows[0];
+    if (playlist.owner !== owner) {
+      throw new AuthorizationError('You do not have permission to access this resource');
+    }
+  }
+
+  async verifyPlaylistAccess(playlistId, userId) {
+    try {
+      await this.verifyPlaylistOwner(playlistId, userId);
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        throw error;
+      }
+      try {
+        await this._collaborationService.verifyCollaborator(playlistId, userId);
+      } catch {
+        throw error;
+      }
+    }
+  }
+
+  async addActivity(playlistId, userId, songId, action) {
+    const id = nanoid(16);
+    const query = {
+      text: 'INSERT INTO playlist_activities VALUES($1, $2, $3, $4, $5)',
+      values: [id, playlistId, userId, action, songId],
+    };
+
+    await this._pool.query(query);
+  }
+
+  async getActivitiesByPlaylistId(playlistId) {
+    const query = {
+      text: 'SELECT users.username, songs.title, playlist_activities.action, playlist_activities.time FROM playlist_activities JOIN users ON users.id = playlist_activities.user_id JOIN songs ON songs.id = playlist_activities.song_id WHERE playlist_activities.playlist_id = $1 ORDER BY playlist_activities.time ASC',
+      values: [playlistId],
+    };
+
+    const result = await this._pool.query(query);
+    return result.rows;
   }
 }
 

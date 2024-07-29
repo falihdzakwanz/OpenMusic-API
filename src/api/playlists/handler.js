@@ -1,8 +1,9 @@
 import autoBind from 'auto-bind';
 
 class PlaylistsHandler {
-  constructor(playlistsService) {
+  constructor(playlistsService, validator) {
     this._playlistsService = playlistsService;
+    this._validator = validator;
 
     autoBind(this);
   }
@@ -27,7 +28,6 @@ class PlaylistsHandler {
   async getPlaylistsHandler(request) {
     const { id: owner } = request.auth.credentials;
     const playlists = await this._playlistsService.getPlaylists(owner);
-
     return {
       status: 'success',
       data: {
@@ -37,12 +37,27 @@ class PlaylistsHandler {
   }
 
   async deletePlaylistHandler(request) {
-    const { id } = request.params;
-    await this._playlistsService.deletePlaylist(id);
+    const { id: playlistId } = request.params;
+    const { id: credentialId } = request.auth.credentials;
+    await this._playlistsService.verifyPlaylistOwner(playlistId, credentialId);
+    await this._playlistsService.deletePlaylist(playlistId);
 
     return {
       status: 'success',
       message: 'Playlist deleted successfully',
+    };
+  }
+
+  async getPlaylistActivitiesHandler(request) {
+    const { id } = request.params;
+    const activities = await this._playlistsService.getActivitiesByPlaylistId(id);
+
+    return {
+      status: 'success',
+      data: {
+        playlistId: id,
+        activities,
+      },
     };
   }
 }

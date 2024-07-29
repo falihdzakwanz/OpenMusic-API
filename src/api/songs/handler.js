@@ -1,8 +1,8 @@
 import autoBind from 'auto-bind';
 
 class SongsHandler {
-  constructor(service, validator) {
-    this._service = service;
+  constructor(songService, validator) {
+    this._songService = songService;
     this._validator = validator;
 
     autoBind(this);
@@ -14,7 +14,7 @@ class SongsHandler {
       title, year, performer, genre, duration, albumId,
     } = request.payload;
 
-    const songId = await this._service.addSong({
+    const songId = await this._songService.addSong({
       title, year, performer, genre, duration, albumId,
     });
 
@@ -30,7 +30,7 @@ class SongsHandler {
 
   async getSongsHandler(request) {
     const { title, performer } = request.query;
-    const songs = await this._service.getSongs({ title, performer });
+    const songs = await this._songService.getSongs({ title, performer });
 
     return {
       status: 'success',
@@ -42,7 +42,7 @@ class SongsHandler {
 
   async getSongByIdHandler(request) {
     const { id } = request.params;
-    const song = await this._service.getSongById(id);
+    const song = await this._songService.getSongById(id);
     return {
       status: 'success',
       data: {
@@ -55,7 +55,7 @@ class SongsHandler {
     this._validator.validateSongPayload(request.payload);
     const { id } = request.params;
 
-    await this._service.editSongById(id, request.payload);
+    await this._songService.editSongById(id, request.payload);
 
     return {
       status: 'success',
@@ -65,7 +65,7 @@ class SongsHandler {
 
   async deleteSongByIdHandler(request) {
     const { id } = request.params;
-    await this._service.deleteSongById(id);
+    await this._songService.deleteSongById(id);
 
     return {
       status: 'success',

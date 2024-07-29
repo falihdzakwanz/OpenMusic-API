@@ -5,7 +5,7 @@ import NotFoundError from '../../exceptions/NotFoundError.js';
 
 const { Pool } = pg;
 
-class PlaylistSongsService {
+class PlaylistSongService {
   constructor() {
     this._pool = new Pool();
   }
@@ -18,7 +18,7 @@ class PlaylistSongsService {
     };
 
     const result = await this._pool.query(query);
-
+    console.log('result: ', result);
     if (!result.rows[0].id) {
       throw new InvariantError('Failed to add song to playlist');
     }
@@ -51,4 +51,4 @@ class PlaylistSongsService {
   }
 }
 
-export default PlaylistSongsService;
+export default PlaylistSongService;
