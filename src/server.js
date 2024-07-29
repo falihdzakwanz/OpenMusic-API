@@ -38,8 +38,8 @@ dotenv.config();
 const init = async () => {
   const collaborationsService = new CollaborationsService();
   const playlistsService = new PlaylistService(collaborationsService);
-  const playlistSongsService = new PlaylistSongService();
   const songsService = new SongsService();
+  const playlistSongService = new PlaylistSongService(songsService);
   const albumsService = new AlbumsService();
   const usersService = new UsersService();
   const authenticationsService = new AuthenticationsService();
@@ -119,6 +119,7 @@ const init = async () => {
       options: {
         collaborationsService,
         playlistsService,
+        usersService,
         validator: CollaborationsValidator,
       },
     },
@@ -126,7 +127,7 @@ const init = async () => {
       plugin: playlistSongs,
       options: {
         playlistsService,
-        playlistSongsService,
+        playlistSongService,
         validator: PlaylistSongValidator,
       },
     },

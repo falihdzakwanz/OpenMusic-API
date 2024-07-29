@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt';
 import pg from 'pg';
 import InvariantError from '../../exceptions/InvariantError.js';
 import AuthenticationError from '../../exceptions/AuthenticationError.js';
+import NotFoundError from '../../exceptions/NotFoundError.js';
 
 const { Pool } = pg;
 
@@ -60,6 +61,21 @@ class UsersService {
       throw new AuthenticationError('Invalid credentials');
     }
     return id;
+  }
+
+  async getUserById(userId) {
+    const query = {
+      text: 'SELECT id, username, fullname FROM users WHERE id = $1',
+      values: [userId],
+    };
+
+    const result = await this._pool.query(query);
+
+    if (!result.rows.length) {
+      throw new NotFoundError('User tidak ditemukan');
+    }
+
+    return result.rows[0];
   }
 }
 
