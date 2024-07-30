@@ -1,9 +1,10 @@
 import autoBind from 'auto-bind';
 
 class PlaylistSongsHandler {
-  constructor(playlistsService, playlistSongService, validator) {
+  constructor(playlistsService, playlistSongService, songsService, validator) {
     this._playlistsService = playlistsService;
     this._playlistSongService = playlistSongService;
+    this._songsService = songsService;
     this._validator = validator;
 
     autoBind(this);
@@ -16,6 +17,7 @@ class PlaylistSongsHandler {
     const { songId } = request.payload;
 
     await this._playlistsService.verifyPlaylistAccess(playlistId, credentialId);
+    await this._songsService.getSongById(songId);
     await this._playlistSongService.addSongToPlaylist(playlistId, songId);
     await this._playlistSongService.addActivity(playlistId, credentialId, 'add', songId);
 

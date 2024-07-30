@@ -33,7 +33,7 @@ class PlaylistSongService {
 
     const result = await this._pool.query(query);
     if (!result.rows[0].id) {
-      throw new NotFoundError('Failed to add song to playlist. Id not found');
+      throw new InvariantError('Failed to add song to playlist');
     }
     return result.rows[0].id;
   }
