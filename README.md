@@ -3,8 +3,8 @@ This project is a backend service for managing playlists and songs. It allows us
 
 ## Key Features
 * **Playlist Management**: Create, update, and delete playlists.
-* **Albums Management**: Add and remove songs from playlists.
-* **Song Management**: Add and remove songs from playlists.
+* **Albums Management**: Create, update, and delete albums.
+* **Song Management**: Add and remove songs.
 * **Collaborations**: Allow multiple users to collaborate on a single playlist.
 * **Activity Logging**: Track and log activities such as adding and removing songs from playlists.
 * **Authentication and Authorization**: Secure access to playlists and songs.
