@@ -33,6 +33,11 @@ import playlistSongs from './api/playlistSongs/index.js';
 import PlaylistSongService from './services/postgres/PlaylistSongService.js';
 import PlaylistSongValidator from './validator/playlistSongs/index.js';
 
+// Exports
+import _exports from './api/exports/index.js';
+import ProducerService from './services/rabbitmq/ProducerService.js';
+import ExportsValidator from './validator/exports/index.js';
+
 dotenv.config();
 
 const init = async () => {
@@ -130,6 +135,14 @@ const init = async () => {
         playlistSongService,
         songsService,
         validator: PlaylistSongValidator,
+      },
+    },
+    {
+      plugin: _exports,
+      options: {
+        exportService: ProducerService,
+        playlistsService,
+        validator: ExportsValidator,
       },
     },
   ]);
