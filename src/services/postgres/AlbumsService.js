@@ -102,6 +102,59 @@ class AlbumsService {
       throw new InvariantError('Failed to add coverUrl');
     }
   }
+
+  async checkIfUserLikedAlbum(albumId, userId) {
+    const query = {
+      text: 'SELECT * FROM user_album_likes WHERE album_id = $1 AND user_id = $2',
+      values: [albumId, userId],
+    };
+
+    const result = await this._pool.query(query);
+
+    return result.rowCount > 0;
+  }
+
+  async addLikeAlbumById(albumId, userId) {
+    const hasLiked = await this.checkIfUserLikedAlbum(albumId, userId);
+
+    if (hasLiked) {
+      throw new InvariantError('User has already liked this album');
+    }
+
+    const id = `like-${nanoid(16)}`;
+    const query = {
+      text: 'INSERT INTO user_album_likes VALUES($1, $2, $3) RETURNING id',
+      values: [id, albumId, userId],
+    };
+
+    const result = await this._pool.query(query);
+    if (!result.rowCount) {
+      throw new InvariantError('Failed to add like to album');
+    }
+  }
+
+  async deleteLikeAlbumById(albumId, userId) {
+    const query = {
+      text: 'DELETE FROM user_album_likes WHERE album_id = $1 AND user_id = $2 RETURNING id',
+      values: [albumId, userId],
+    };
+
+    const result = await this._pool.query(query);
+
+    if (!result.rowCount) {
+      throw new InvariantError('Failed to delete like from album');
+    }
+  }
+
+  async getLikesAlbumCountById(albumId) {
+    const query = {
+      text: 'SELECT COUNT(*) FROM user_album_likes WHERE album_id = $1',
+      values: [albumId],
+    };
+    const result = await this._pool.query(query);
+
+    return parseInt(result.rows[0].count, 10);
+  }
 }
 
 export default AlbumsService;
