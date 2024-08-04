@@ -1,6 +1,8 @@
 import Hapi from '@hapi/hapi';
 import dotenv from 'dotenv';
 import Jwt from '@hapi/jwt';
+import { fileURLToPath } from 'url';
+import path from 'path';
 import ClientError from './exceptions/ClientError.js';
 
 // Albums
@@ -38,6 +40,14 @@ import _exports from './api/exports/index.js';
 import ProducerService from './services/rabbitmq/ProducerService.js';
 import ExportsValidator from './validator/exports/index.js';
 
+// uploads
+import uploads from './api/uploads/index.js';
+import StorageService from './services/storage/StorageService.js';
+import UploadsValidator from './validator/uploads/index.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 dotenv.config();
 
 const init = async () => {
@@ -48,6 +58,7 @@ const init = async () => {
   const albumsService = new AlbumsService();
   const usersService = new UsersService();
   const authenticationsService = new AuthenticationsService();
+  const storageService = new StorageService(path.resolve(__dirname, 'api/uploads/file/cover'));
 
   const server = Hapi.server({
     port: process.env.PORT,
@@ -143,6 +154,14 @@ const init = async () => {
         exportService: ProducerService,
         playlistsService,
         validator: ExportsValidator,
+      },
+    },
+    {
+      plugin: uploads,
+      options: {
+        uploadsService: storageService,
+        albumsService,
+        validator: UploadsValidator,
       },
     },
   ]);
