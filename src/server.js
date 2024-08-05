@@ -45,6 +45,9 @@ import uploads from './api/uploads/index.js';
 import StorageService from './services/storage/StorageService.js';
 import UploadsValidator from './validator/uploads/index.js';
 
+// Cache
+import CacheService from './services/redis/CacheService.js';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -59,6 +62,7 @@ const init = async () => {
   const usersService = new UsersService();
   const authenticationsService = new AuthenticationsService();
   const storageService = new StorageService(path.resolve(__dirname, 'api/uploads/file/cover'));
+  const cacheService = new CacheService();
 
   const server = Hapi.server({
     port: process.env.PORT,
@@ -97,6 +101,7 @@ const init = async () => {
       plugin: albums,
       options: {
         service: albumsService,
+        cache: cacheService,
         validator: AlbumsValidator,
       },
     },
@@ -182,7 +187,6 @@ const init = async () => {
       if (!response.isServer) {
         return h.continue;
       }
-      console.log(response);
       const newResponse = h.response({
         status: 'error',
         message: 'Something went wrong',

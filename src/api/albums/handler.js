@@ -1,8 +1,9 @@
 import autoBind from 'auto-bind';
 
 class AlbumsHandler {
-  constructor(service, validator) {
+  constructor(service, cache, validator) {
     this._service = service;
+    this._cache = cache;
     this._validator = validator;
 
     autoBind(this);
@@ -62,6 +63,7 @@ class AlbumsHandler {
     const { id: userId } = request.auth.credentials;
     await this._service.checkAlbumById(albumId);
     await this._service.addLikeAlbumById(albumId, userId);
+    await this._cache.delete(`album-likes-${albumId}`);
 
     const response = h.response({
       status: 'success',
@@ -76,25 +78,42 @@ class AlbumsHandler {
     const { id: userId } = request.auth.credentials;
     await this._service.checkAlbumById(albumId);
     await this._service.deleteLikeAlbumById(albumId, userId);
-
+    await this._cache.delete(`album-likes-${albumId}`);
     return {
       status: 'success',
       message: 'Success delete like from album',
     };
   }
 
-  async getLikesAlbumByIdHandler(request) {
+  async getLikesAlbumByIdHandler(request, h) {
     const { id: albumId } = request.params;
 
     await this._service.checkAlbumById(albumId);
-    const likes = await this._service.getLikesAlbumCountById(albumId);
 
-    return {
-      status: 'success',
-      data: {
-        likes,
-      },
-    };
+    try {
+      const cachedLikes = await this._cache.get(`album-likes-${albumId}`);
+      const response = h.response({
+        status: 'success',
+        data: {
+          likes: JSON.parse(cachedLikes),
+        },
+      });
+      response.header('X-Data-Source', 'cache');
+      return response;
+    } catch (error) {
+      const likes = await this._service.getLikesAlbumCountById(albumId);
+
+      await this._cache.set(`album-likes-${albumId}`, JSON.stringify(likes), 1800);
+
+      const response = h.response({
+        status: 'success',
+        data: {
+          likes,
+        },
+      });
+      response.header('X-Data-Source', 'database');
+      return response;
+    }
   }
 }
 
