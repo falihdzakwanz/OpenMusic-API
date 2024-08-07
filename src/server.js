@@ -1,6 +1,7 @@
 import Hapi from '@hapi/hapi';
 import dotenv from 'dotenv';
 import Jwt from '@hapi/jwt';
+import Inert from '@hapi/inert';
 import { fileURLToPath } from 'url';
 import path from 'path';
 import ClientError from './exceptions/ClientError.js';
@@ -77,6 +78,9 @@ const init = async () => {
   await server.register([
     {
       plugin: Jwt,
+    },
+    {
+      plugin: Inert,
     },
   ]);
 
