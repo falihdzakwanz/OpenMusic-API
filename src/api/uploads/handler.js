@@ -14,12 +14,12 @@ class UploadsHandler {
     const { id: albumId } = request.params;
 
     this._validator.validateCoverHeaders(cover.hapi.headers);
-    this._albumsService.checkAlbumById(albumId);
+    await this._albumsService.checkAlbumById(albumId);
 
     const filename = await this._uploadsService.writeFile(cover, cover.hapi);
     const fileLocation = `http://${process.env.HOST}:${process.env.PORT}/albums/cover/${filename}`;
 
-    this._albumsService.addCoverUrl(fileLocation, albumId);
+    await this._albumsService.addCoverUrl(fileLocation, albumId);
 
     const response = h.response({
       status: 'success',
