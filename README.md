@@ -44,11 +44,15 @@ This project is a backend service for managing playlists and songs. It allows us
     npm install    
 
 ### 3. Set up the database:
-    Create a PostgreSQL database.
+  - Create a PostgreSQL database.
+  - Run the command below.
+    ```sh
     npm run migrate up
+    ```
     
 ### 4. Configure environment variables:
-    Create a .env file based on the .env.example file.
+  - Create a .env file based on the .env.example file.
+  - Set the necessary environment variables for database connection and other configurations.
 
 ### 5. Run the server:
     npm run start:dev
